@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         mTracker.setScreenName("MainActivity");
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
 
-        jsonString = "[{\"Username\":\"ajdari.j@chmail.com\",\"Password\":\"252579\"}]";
+        jsonString = "";
 
         mTextView = (TextView) findViewById(R.id.textView);
 

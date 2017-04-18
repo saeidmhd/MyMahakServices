@@ -6,10 +6,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
@@ -33,10 +36,13 @@ import org.ksoap2.transport.HttpTransportSE;
 
 import java.io.IOException;
 import java.util.List;
+
+import ir.mahaksoft.mymahakservices.Receiver.ConnectivityReceiver;
+import ir.mahaksoft.mymahakservices.data.model.PackInfo;
 import ir.mahaksoft.mymahakservices.data.model.UserInfo;
 import ir.mahaksoft.mymahakservices.data.model.UserInfoModel;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ConnectivityReceiver.ConnectivityReceiverListener {
 
     private Tracker mTracker;
 
@@ -45,10 +51,12 @@ public class MainActivity extends AppCompatActivity {
 
 
     public static List<UserInfo> mUserInfo ;
-    String jsonString;
+    public static List<PackInfo> mPackageInfo ;
 
 
-    private static TextView mTextView;
+    private static TextView mTextView,pkg_textView;
+    Snackbar mSnackbar;
+    private int ConnectedConter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,137 +69,79 @@ public class MainActivity extends AppCompatActivity {
         mTracker.setScreenName("MainActivity");
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
 
-        jsonString = "";
 
         mTextView = (TextView) findViewById(R.id.textView);
-
-        if(checkPlayServices()){
-            if(CheckNetworkAvailability()&&isOnline()){
-                ExecuteLoginTask();
-            }
-            else{
-               // Toast.makeText(this, "no internet", Toast.LENGTH_SHORT).show();
-
-                showDialog(MainActivity.this);
-               /* AlertDialog.Builder builder =
-                        new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
-                builder.setTitle("عدم اتصال به اینترنت");
-                builder.setMessage("اتصال شما به اینترنت برقرار نیست.برای استفاده از سرویس مرکز خدمات محک به اینترنت متصل شوید.");
-                builder.setPositiveButton("بلی", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                });
-                builder.setNegativeButton("خیر", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                });
-                builder.show();*/
-
-            }
-        }
-        else{
-           // Toast.makeText(this, "no play services", Toast.LENGTH_SHORT).show();
-            final String appPackageName = "com.google.android.gms"; // getPackageName() from Context or Activity object
-            try {
-
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
-            } catch (android.content.ActivityNotFoundException anfe) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id="
-                        + appPackageName)));
-            }
-        }
+        pkg_textView = (TextView) findViewById(R.id.pkg_textView);
+        ConnectedConter = 0;
 
 
+        // Manually checking internet connection
+        checkConnection();
 
 
     }
 
-    public void showDialog(Activity activity){
-        final Dialog dialog = new Dialog(activity);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCancelable(false);
-        dialog.setContentView(R.layout.no_internet_dialog);
 
-      /*  TextView text = (TextView) dialog.findViewById(R.id.text_dialog);
-        text.setText(msg);
-
-        Button dialogButton = (Button) dialog.findViewById(R.id.btn_dialog);
-        dialogButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });*/
-
-        dialog.show();
-
+    private void checkConnection() {
+        boolean isConnected = ConnectivityReceiver.isConnected();
+        showSnack(isConnected);
     }
 
     public void ExecuteLoginTask(){
-        new MRequestAsync().execute(jsonString,jsonString);
+        new MRequestAsync().execute();
     }
 
-    private boolean checkPlayServices() {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
-                        .show();
-            } else {
-                Log.i(TAG, "This device is not supported.");
-                finish();
-            }
-            return false;
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        showSnack(isConnected);
+    }
+
+    private void showSnack(boolean isConnected) {
+        String message="";
+
+        if (isConnected && ConnectedConter == 0) {
+            message = " در حال به روز رسانی اطلاعات ......";
+            mSnackbar = Snackbar
+                    .make(findViewById(R.id.activity_main), message, Snackbar.LENGTH_SHORT);
+            ExecuteLoginTask();
+            mSnackbar.show();
+
+        } else if(isConnected && ConnectedConter == 1) {
+            message = "اطلاعات به روز است ! ";
+            mSnackbar = Snackbar
+                    .make(findViewById(R.id.activity_main), message, Snackbar.LENGTH_SHORT);
+            mSnackbar.show();
+
+        }else if(!isConnected){
+            message = "دستگاه خود را به اینترنت متصل کنید";
+            mSnackbar = Snackbar
+                    .make(findViewById(R.id.activity_main), message, Snackbar.LENGTH_INDEFINITE);
+            mSnackbar.show();
+
         }
-        return true;
-    }
 
-    public boolean CheckNetworkAvailability(){
 
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
+
 
     }
 
-    public boolean isOnline() {
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-            int     exitValue = ipProcess.waitFor();
-            return (exitValue == 0);
-        }
-        catch (IOException e)          { e.printStackTrace(); }
-        catch (InterruptedException e) { e.printStackTrace(); }
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-        return false;
+        // register connection status listener
+        BaseApplication.getInstance().setConnectivityListener(this);
     }
 
 
-    public void btnClick(View view) {
-
-        mTracker.send(new HitBuilders.EventBuilder()
-                .setCategory("Action")
-                .setAction("Share")
-                .build());
-
-        Intent mIntent = new Intent(MainActivity.this,DetailActivity.class);
-        startActivity(mIntent);
-
-    }
 
     //.AsyncTask<Params, Progress, Result>
 
     public class MRequestAsync extends AsyncTask<String, Integer, String> {
 
-        private  String App_Sign = "";
-        private  String js = "";
+        private  String App_Sign = "05b14e27-f2cd-4329-8269-cbc62b182e78";
+        private  String js = "[{\"Username\":\"ajdari.j@chmail.com\",\"Password\":\"252579\"}]";
         private  String WSDL_TARGET_NAMESPACE = "http://tempuri.org/";
         private  String SOAP_ADDRESS = "http://login.mahaksoft.com/loginservices.asmx";
         private  String SOAP_ACTION = "http://tempuri.org/ValidateUser";
@@ -208,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
             // Set your ProgressBar Title
             mProgressDialog.setTitle("مرکز خدمات محک");
             // Set your ProgressBar Message
-            mProgressDialog.setMessage("در حال دریافت اطلاعات");
+            mProgressDialog.setMessage("در حال بروز رسانی اطلاعات");
             mProgressDialog.setIndeterminate(false);
             mProgressDialog.setMax(100);
             mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -267,23 +217,29 @@ public class MainActivity extends AppCompatActivity {
 
             //mTextView.setText(s);
             UserInfoModel userInfoModel;
+
             Gson gson = new Gson();
 
-            if (s!=null){
+            try {
+
                 userInfoModel = gson.fromJson(s,UserInfoModel.class);
+                mPackageInfo = userInfoModel.getPackInfo();
                 mUserInfo = userInfoModel.getUserInfo();
-                mUserInfo.get(0).getFirstName();
 
-                mTextView.setText(mUserInfo.get(0).getFirstName());
+                mTextView.setText(mUserInfo.get(0).getFirstName() + " " + mUserInfo.get(0).getLastName());
+                pkg_textView.setText(mPackageInfo.get(0).getProductType());
+                ConnectedConter = 1;
+
+
+            } catch (JsonSyntaxException e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "no data", Toast.LENGTH_SHORT).show();
+            }finally {
 
                 mProgressDialog.dismiss();
+                mSnackbar.dismiss();
             }
-            else{
 
-                mTextView.setText("no data");
-                mProgressDialog.dismiss();
-
-            }
 
 
 
@@ -292,6 +248,8 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
 
 
 

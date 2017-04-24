@@ -8,10 +8,10 @@ public class PackInfo {
 
     @SerializedName("Id")
     @Expose
-    private int id;
+    private long id;
     @SerializedName("PackageNo")
     @Expose
-    private int packageNo;
+    private long packageNo;
     @SerializedName("AppId")
     @Expose
     private int appId;
@@ -73,19 +73,19 @@ public class PackInfo {
     @Expose
     private String lockTypeName;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public int getPackageNo() {
+    public long getPackageNo() {
         return packageNo;
     }
 
-    public void setPackageNo(int packageNo) {
+    public void setPackageNo(long packageNo) {
         this.packageNo = packageNo;
     }
 

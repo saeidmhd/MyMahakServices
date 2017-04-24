@@ -46,17 +46,17 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
 
     private Tracker mTracker;
 
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    private static final String TAG = "MainActivity";
-
 
     public static List<UserInfo> mUserInfo ;
     public static List<PackInfo> mPackageInfo ;
 
 
+
     private static TextView mTextView,pkg_textView;
     Snackbar mSnackbar;
     private int ConnectedConter;
+
+    private String strResponse = LoginActivity.strResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +74,39 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
         pkg_textView = (TextView) findViewById(R.id.pkg_textView);
         ConnectedConter = 0;
 
+        String result;
+        UserInfoModel userInfoModel;
+
+        Gson gson = new Gson();
+
+        try {
+
+            userInfoModel = gson.fromJson(strResponse,UserInfoModel.class);
+            result = userInfoModel.getResult();
+
+
+            if (result.equals("True")){
+
+                mPackageInfo = userInfoModel.getPackInfo();
+                mUserInfo = userInfoModel.getUserInfo();
+                mTextView.setText(mUserInfo.get(0).getFirstName() + " " + mUserInfo.get(0).getLastName());
+                pkg_textView.setText(mPackageInfo.get(0).getAppName());
+                ConnectedConter = 1;
+
+
+            }
+            else{
+
+                Toast.makeText(MainActivity.this, "کاربری با این مشخصات ثبت نشده است", Toast.LENGTH_SHORT).show();
+            }
+
+
+
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+            Toast.makeText(MainActivity.this, "no data", Toast.LENGTH_SHORT).show();
+        }
+
 
         // Manually checking internet connection
         checkConnection();
@@ -87,9 +120,6 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
         showSnack(isConnected);
     }
 
-    public void ExecuteLoginTask(){
-        new MRequestAsync().execute();
-    }
 
 
     @Override
@@ -99,12 +129,11 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
 
     private void showSnack(boolean isConnected) {
         String message="";
-
         if (isConnected && ConnectedConter == 0) {
             message = " در حال به روز رسانی اطلاعات ......";
             mSnackbar = Snackbar
                     .make(findViewById(R.id.activity_main), message, Snackbar.LENGTH_SHORT);
-            ExecuteLoginTask();
+            //ExecuteLoginTask();
             mSnackbar.show();
 
         } else if(isConnected && ConnectedConter == 1) {
@@ -123,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
 
 
 
-
     }
 
     @Override
@@ -133,126 +161,6 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
         // register connection status listener
         BaseApplication.getInstance().setConnectivityListener(this);
     }
-
-
-
-    //.AsyncTask<Params, Progress, Result>
-
-    public class MRequestAsync extends AsyncTask<String, Integer, String> {
-
-        private  String App_Sign = "05b14e27-f2cd-4329-8269-cbc62b182e78";
-        private  String js = "[{\"Username\":\"ajdari.j@chmail.com\",\"Password\":\"252579\"}]";
-        private  String WSDL_TARGET_NAMESPACE = "http://tempuri.org/";
-        private  String SOAP_ADDRESS = "http://login.mahaksoft.com/loginservices.asmx";
-        private  String SOAP_ACTION = "http://tempuri.org/ValidateUser";
-        private  String OPERATION_NAME = "ValidateUser";
-
-        String strResponse = "";
-        ProgressDialog mProgressDialog;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            // Create ProgressBar
-            mProgressDialog = new ProgressDialog(MainActivity.this);
-            // Set your ProgressBar Title
-            mProgressDialog.setTitle("مرکز خدمات محک");
-            // Set your ProgressBar Message
-            mProgressDialog.setMessage("در حال بروز رسانی اطلاعات");
-            mProgressDialog.setIndeterminate(false);
-            mProgressDialog.setMax(100);
-            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            // Show ProgressBar
-            mProgressDialog.setCancelable(false);
-            //  mProgressDialog.setCanceledOnTouchOutside(false);
-            mProgressDialog.show();
-        }
-
-        @Override
-        protected String doInBackground(String... jsonString) {
-
-            //Create request
-            SoapObject request = new SoapObject(WSDL_TARGET_NAMESPACE,OPERATION_NAME);
-
-            //Property which holds input parameters
-            request.addProperty("AppSign", App_Sign);
-            request.addProperty("jsonString", js);
-
-            //Create envelope
-            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-
-            envelope.dotNet = true;
-
-            //Set output SOAP object
-            envelope.setOutputSoapObject(request);
-
-            //Create HTTP call object
-            HttpTransportSE httpTransport = new HttpTransportSE(SOAP_ADDRESS);
-
-            try{
-                httpTransport.call(SOAP_ACTION, envelope);
-
-                //Get the response
-                Object response = envelope.getResponse();
-                strResponse = response.toString();
-                return strResponse;
-
-
-            }
-            catch (Exception exception){
-
-                return exception.toString();
-            }
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            // Update the ProgressBar
-            mProgressDialog.setProgress(values[0]);
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-
-            //mTextView.setText(s);
-            UserInfoModel userInfoModel;
-
-            Gson gson = new Gson();
-
-            try {
-
-                userInfoModel = gson.fromJson(s,UserInfoModel.class);
-                mPackageInfo = userInfoModel.getPackInfo();
-                mUserInfo = userInfoModel.getUserInfo();
-
-                mTextView.setText(mUserInfo.get(0).getFirstName() + " " + mUserInfo.get(0).getLastName());
-                pkg_textView.setText(mPackageInfo.get(0).getProductType());
-                ConnectedConter = 1;
-
-
-            } catch (JsonSyntaxException e) {
-                e.printStackTrace();
-                Toast.makeText(MainActivity.this, "no data", Toast.LENGTH_SHORT).show();
-            }finally {
-
-                mProgressDialog.dismiss();
-                mSnackbar.dismiss();
-            }
-
-
-
-
-            Log.e("ResultError",s);
-            super.onPostExecute(s);
-
-        }
-    }
-
-
-
-
-
 
 
 }

@@ -293,6 +293,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmail = email;
             mPassword = password;
             js2 = "[{\"Username\":\"" + mEmail + "\",\"Password\":\"" + mPassword + "\"}]";
+
         }
 
         private  String App_Sign = "05b14e27-f2cd-4329-8269-cbc62b182e78";
@@ -379,7 +380,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                 if (result.equals("True")){
 
-                    Intent intent = new Intent(LoginActivity.this,SplashActivity.class);
+                    Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                     startActivity(intent);
 
                 }

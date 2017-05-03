@@ -68,7 +68,7 @@
                         android:layout_alignParentLeft="true"
                         android:layout_alignParentStart="true"
                         android:layout_marginBottom="6dp"
-                        android:paddingLeft="45dp"/>
+                        android:paddingLeft="32dp"/>
 
                     <TextView
                         android:text="User Name"
@@ -85,7 +85,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/ic_perm_identity_white_36dp"
+                        app:srcCompat="@drawable/ic_perm_identity_white_24dp"
                         android:id="@+id/imageView2"
                         android:layout_marginLeft="32dp"
                         android:layout_marginStart="32dp"
@@ -118,20 +118,8 @@
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_weight="0.5"
-                        android:layout_marginLeft="24dp"
-                        android:layout_gravity="right">
-
-                        <TextView
-                            android:text="saeid.mhd@gmail.com"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/textMIDValue"
-                            android:textColor="@color/colorsecondary_text"
-                            android:textSize="10sp"
-                            android:layout_alignParentTop="true"
-                            android:layout_alignParentRight="true"
-                            android:layout_alignParentEnd="true" />
+                        android:layout_weight="0.6"
+                        android:layout_marginLeft="24dp">
 
                         <TextView
                             android:text="2000004809122836348098098088908998"
@@ -143,12 +131,23 @@
                             android:layout_below="@+id/textMIDValue"
                             android:layout_alignParentRight="true"
                             android:layout_alignParentEnd="true" />
+
+                        <TextView
+                            android:text="saeid.mhd@gmail.com"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textMIDValue"
+                            android:textColor="@color/colorsecondary_text"
+                            android:textSize="10sp"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_alignParentEnd="true" />
                     </RelativeLayout>
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_weight="1.5"
+                        android:layout_weight="1.4"
                         android:layout_marginRight="24dp"
                         >
 
@@ -164,7 +163,7 @@
                             android:textSize="10sp" />
 
                         <TextView
-                            android:text="شناسه محک :"
+                            android:text="شناسه محک:"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/textMahakID"

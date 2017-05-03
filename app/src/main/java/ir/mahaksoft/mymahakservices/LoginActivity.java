@@ -45,8 +45,10 @@ import org.ksoap2.transport.HttpTransportSE;
 import java.util.ArrayList;
 import java.util.List;
 
+import ir.mahaksoft.mymahakservices.Receiver.SmsBroadcastReceiver;
 import ir.mahaksoft.mymahakservices.data.model.UserInfoModel;
 
+import static android.Manifest.permission.INTERNET;
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
@@ -113,6 +115,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+
+
+
+        if (getIntent()!=null && getIntent().hasExtra(
+                Intent.EXTRA_TEXT )) {
+            mPasswordView.setText(getIntent().getStringExtra(
+                    Intent.EXTRA_TEXT));
+        }
+
+
+
     }
 
     private void populateAutoComplete() {
@@ -192,11 +206,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
+        } /*else if (!isEmailValid(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
-        }
+        }*/
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first
@@ -264,6 +278,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mEmailView.setAdapter(adapter);
     }
+
+    public void Retrive_pass(View view) {
+
+        String value = mEmailView.getText().toString();
+        Intent intent = new Intent(getApplicationContext(), forget_password_act.class);
+        intent.putExtra("sample_name", value);
+        startActivity(intent);
+
+    }
+
+
 
 
     private interface ProfileQuery {
@@ -413,4 +438,3 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
     }
 }
-

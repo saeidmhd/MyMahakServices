@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsMessage;
+import android.util.Log;
+import android.widget.Toast;
 
 import ir.mahaksoft.mymahakservices.LoginActivity;
 import ir.mahaksoft.mymahakservices.data.model.Message;
@@ -52,25 +54,18 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
             }
 
 
-            Intent mintent = new Intent(context, LoginActivity.class);
-            intent.putExtra(Intent.EXTRA_TEXT,extractCode());
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(mintent);
 
+           // Toast.makeText(context, extractCode(), Toast.LENGTH_SHORT).show();
+            Log.e("ResultError",extractCode());
 
+            LoginActivity inst = LoginActivity.instance();
+            inst.updatePass(extractCode());
 
-
-           /* if (SmsReciverEvent != null) {
-                SmsReciverEvent.OnReadCodeMahak(extractCode());
-            }*/
 
         }
 
     }
 
-   /* public interface SmsReciverEvent {
-         void OnReadCodeMahak(String code);
-    }*/
 
     public String extractCode(){
         String code = "";
@@ -78,10 +73,13 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
         if (strAddress.equals("+9830008793")){
 
             String myString = strMessage;
-            String SearchStr = "با موفقیت به";
-            code = myString.substring(myString.indexOf(SearchStr) + 13 , myString.length());
+            String SearchStr = " با موفقيت به ";
+            int index = myString.indexOf(SearchStr);
+            code = myString.substring(index + 14 , myString.length()).replaceAll("\\D+","");
 
         }
-        return strMessage;
+        return code;
     }
+
+
 }

@@ -243,6 +243,8 @@ public class forget_password_act extends AppCompatActivity {
 
                 if (result.equals("True")){
                     Toast.makeText(forget_password_act.this, msg, Toast.LENGTH_SHORT).show();
+                    forget_password_act.this.onBackPressed();
+                    finish();
 
 
                 }

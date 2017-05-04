@@ -44,6 +44,8 @@ import org.ksoap2.transport.HttpTransportSE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ir.mahaksoft.mymahakservices.Receiver.SmsBroadcastReceiver;
 import ir.mahaksoft.mymahakservices.data.model.UserInfoModel;
@@ -74,6 +76,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
     private TextView forget_password;
+    private static LoginActivity activity;
+
+    public static LoginActivity instance() {
+        return activity;
+    }
 
 
     @Override
@@ -119,14 +126,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
 
-        if (getIntent()!=null && getIntent().hasExtra(
-                Intent.EXTRA_TEXT )) {
-            mPasswordView.setText(getIntent().getStringExtra(
-                    Intent.EXTRA_TEXT));
-        }
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        activity = this;
+    }
 
-
+    public void updatePass(final String newSms) {
+        mPasswordView.setText(newSms);
     }
 
     private void populateAutoComplete() {
@@ -281,13 +290,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     public void Retrive_pass(View view) {
 
+
+
         String value = mEmailView.getText().toString();
         Intent intent = new Intent(getApplicationContext(), forget_password_act.class);
         intent.putExtra("sample_name", value);
         startActivity(intent);
 
-    }
 
+    }
 
 
 

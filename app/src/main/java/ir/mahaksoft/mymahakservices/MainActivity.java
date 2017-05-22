@@ -6,11 +6,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -42,7 +44,7 @@ import ir.mahaksoft.mymahakservices.data.model.PackInfo;
 import ir.mahaksoft.mymahakservices.data.model.UserInfo;
 import ir.mahaksoft.mymahakservices.data.model.UserInfoModel;
 
-public class MainActivity extends AppCompatActivity implements ConnectivityReceiver.ConnectivityReceiverListener {
+public class MainActivity extends BasicActivity implements ConnectivityReceiver.ConnectivityReceiverListener {
 
     private Tracker mTracker;
 
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
 
 
+
         mTextView = (TextView) findViewById(R.id.textView);
         pkg_textView = (TextView) findViewById(R.id.pkg_textView);
         ConnectedConter = 0;
@@ -89,8 +92,18 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
 
                 mPackageInfo = userInfoModel.getPackInfo();
                 mUserInfo = userInfoModel.getUserInfo();
-                mTextView.setText(mUserInfo.get(0).getFirstName() + " " + mUserInfo.get(0).getLastName());
-                pkg_textView.setText(mPackageInfo.get(0).getAppName());
+
+
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                Log.e("dasdasddasdasd",mUserInfo.get(0).getUserId());
+                String user = mUserInfo.get(0).getUserId();
+                preferences.edit().putString(BasicActivity.__Key_UserId,mUserInfo.get(0).getUserId()).commit();
+
+
+                mTextView.setText(mUserInfo.get(0).getFirstName() + " " + mUserInfo.get(0).getLastName() +
+                        mUserInfo.get(0).getEmail() + " "+
+                        mUserInfo.get(0).getMobile());
+                pkg_textView.setText(mPackageInfo.get(0).getAppName()+ " " + mPackageInfo.get(0).getVersion());
                 ConnectedConter = 1;
 
 

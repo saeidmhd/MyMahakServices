@@ -1,12 +1,13 @@
 package ir.mahaksoft.mymahakservices;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -34,6 +35,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -44,21 +47,23 @@ import org.ksoap2.transport.HttpTransportSE;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import ir.mahaksoft.mymahakservices.Receiver.SmsBroadcastReceiver;
+import ir.mahaksoft.mymahakservices.data.model.UserInfo;
 import ir.mahaksoft.mymahakservices.data.model.UserInfoModel;
 
-import static android.Manifest.permission.INTERNET;
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends BasicActivity implements LoaderCallbacks<Cursor> {
+
+    private Tracker mTracker;
 
     static String strResponse = "";
+
+    public static List<UserInfo> mUserInfo ;
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -87,6 +92,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout);
+
+
+        // Obtain the shared Tracker instance.
+        BaseApplication application = (BaseApplication) getApplication();
+        mTracker = application.getDefaultTracker();
+        mTracker.setScreenName("LoginActivity");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+
+
         // Set up the login form.
         forget_password = (TextView) findViewById(R.id.forget_password);
         Typeface tf1 = Typeface.createFromAsset(getAssets(),"font/IRANSansMobile.ttf");
@@ -128,11 +143,38 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     }
 
+    //register receiver
+
     @Override
     public void onStart() {
         super.onStart();
+        PackageManager pm = getPackageManager();
+        ComponentName compName =
+                new ComponentName(getApplicationContext(),
+                        SmsBroadcastReceiver.class);
+        pm.setComponentEnabledSetting(
+                compName,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
         activity = this;
     }
+
+    // unregister receiver
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        PackageManager pm = getPackageManager();
+        ComponentName compName =
+                new ComponentName(getApplicationContext(),
+                        SmsBroadcastReceiver.class);
+        pm.setComponentEnabledSetting(
+                compName,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP);
+    }
+
+
 
     public void updatePass(final String newSms) {
         mPasswordView.setText(newSms);
@@ -293,7 +335,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
         String value = mEmailView.getText().toString();
-        Intent intent = new Intent(getApplicationContext(), forget_password_act.class);
+        Intent intent = new Intent(getApplicationContext(), ForgetPasswordActivity.class);
         intent.putExtra("sample_name", value);
         startActivity(intent);
 
@@ -415,6 +457,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 result = userInfoModel.getResult();
 
                 if (result.equals("True")){
+
+                    mUserInfo = userInfoModel.getUserInfo();
+
+
+                    Log.e("dasdasddasdasd",mUserInfo.get(0).getUserId());
+                    String user = mUserInfo.get(0).getUserId();
+
+
+
 
                     Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                     startActivity(intent);

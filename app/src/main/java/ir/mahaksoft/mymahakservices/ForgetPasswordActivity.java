@@ -1,7 +1,6 @@
 package ir.mahaksoft.mymahakservices;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +13,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -22,12 +23,12 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import ir.mahaksoft.mymahakservices.data.model.UserRetriveInfo;
 
-public class forget_password_act extends AppCompatActivity {
+public class ForgetPasswordActivity extends BasicActivity {
+
+    private Tracker mTracker;
+
 
     // UI references.
     TextView textMahakID,textPackNum,textMIDValue,textPackNumValue,result_text;
@@ -40,12 +41,18 @@ public class forget_password_act extends AppCompatActivity {
 
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.act_forget_pass);
+
+
+
+        // Obtain the shared Tracker instance.
+        BaseApplication application = (BaseApplication) getApplication();
+        mTracker = application.getDefaultTracker();
+        mTracker.setScreenName("ForgetPasswordActivity");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
 
         send_pass = (Button) findViewById(R.id.send_pass);
         cancel = (Button) findViewById(R.id.cancel);
@@ -165,7 +172,7 @@ public class forget_password_act extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             // Create ProgressBar
-            mProgressDialog = new ProgressDialog(forget_password_act.this);
+            mProgressDialog = new ProgressDialog(ForgetPasswordActivity.this);
             //  ProgressBar Title
             mProgressDialog.setTitle("مرکز خدمات محک");
             //  ProgressBar Message
@@ -242,15 +249,15 @@ public class forget_password_act extends AppCompatActivity {
                 msg = userRetriveInfo.getMsg();
 
                 if (result.equals("True")){
-                    Toast.makeText(forget_password_act.this, msg, Toast.LENGTH_SHORT).show();
-                    forget_password_act.this.onBackPressed();
+                    Toast.makeText(ForgetPasswordActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    ForgetPasswordActivity.this.onBackPressed();
                     finish();
 
 
                 }
                 else{
 
-                    Toast.makeText(forget_password_act.this, "کاربری با این مشخصات ثبت نشده است", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ForgetPasswordActivity.this, "کاربری با این مشخصات ثبت نشده است", Toast.LENGTH_SHORT).show();
                     /*mPasswordView.setError(getString(R.string.error_incorrect_password));
                     mPasswordView.requestFocus();*/
                 }
@@ -259,7 +266,7 @@ public class forget_password_act extends AppCompatActivity {
 
             } catch (JsonSyntaxException e) {
                 e.printStackTrace();
-                Toast.makeText(forget_password_act.this, "مشکل سرور - دوبار تلاش کنید", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ForgetPasswordActivity.this, "مشکل سرور - دوبار تلاش کنید", Toast.LENGTH_SHORT).show();
             }
             finally {
                 mProgressDialog.dismiss();
